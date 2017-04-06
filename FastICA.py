@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 import numpy as np
-import preprocessing
-import functions
+import preprocessing as prep
+import functions as f
+import inout
 
 def one_unit_ica(X, g, dg):
 
@@ -32,3 +33,40 @@ def multi_unit_ica(X, g, dg, num_components):
         W[n] = W[n] / np.linalg.norm(W[n])
 
     return W
+
+def ica(fn):
+# Runs ica on a file named "fn"
+
+    # Get input as an array for each channel
+    io = inout.WavIO(fn)
+    channels = io.read_source()
+    
+    # Now perform the algorithm seperately on each channel
+    sources = []
+    for channel in channels:
+
+        # First, preprocess data
+        mean, centered = prep.centering(channel)
+        processed = prep.whitening(centered)
+    
+        # Second, run ICA
+        sources += [multi_unit_ica(processed, f.exp, f.dexp, 3)]
+
+    # Concatenate channels
+    for channel in sources[1:]:
+        i=0
+        for source in channel:
+            sources[0][i] = np.append(sources[0][i], source, axis=1)
+            i+=1
+
+    # Add mean back
+    sources[0] += mean
+
+    # Write output files
+    io.write_sources(sources[0])
+
+    
+
+if __name__ == '__main__':
+
+    ica('elvis_riverside.wav')
