@@ -44,6 +44,9 @@ class WavIO:
         root_name = self.fn[:-4]+'_'
         for i in range(len(sources)):
             source = _normalize_volume(sources[i])
+            # Catch special case of uint8
+            if source.dtype == np.int8:
+                source = np.array(source, dtype=np.int8)
             sciowav.write(root_name+str(i)+'.wav', self.rate, source)
             
 def scale_source(source, factor):
