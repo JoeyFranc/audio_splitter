@@ -5,11 +5,18 @@ import numpy as np
 
 def centering(mtx):
 
+    unsigned = False
+
     # Special case: uint8
     if mtx.dtype == np.uint8:
-        mtx = np.array(mtx*8388608, dtype=np.int16)
+        mtx = np.array(mtx, dtype=np.int16)
+        unsigned = True
     mean = np.mean(mtx)
-    centered = np.array(mtx - mean, dtype=mtx.dtype)
+    mtx -= mean
+
+    # Convert special case to int8
+    if unsigned:
+        mtx = np.array(mtx, dtype=np.int8)
     return (mean, centered)
 
 def whitening(mtx):
@@ -19,4 +26,3 @@ def whitening(mtx):
     E = eigenvec
     xtilde = E @ Drootinv @ E.T @ X
     return np.array(xtilde, dtype=mtx.dtype)
-
