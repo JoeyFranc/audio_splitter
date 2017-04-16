@@ -1,8 +1,9 @@
 import wave as wav
 import numpy as np
 import scipy.io.wavfile as sciowav
+from scipy import signal
 
-
+np.random.seed(0)
 
 """ Public Methods """
 
@@ -101,9 +102,52 @@ class _sign_extend():
         # Positive case
         return integer
 
+
+
+class DGP():
+    def __init__(self, num_points = 2000):
+        self.num_points = num_points
+        self.time = np.linspace(0, 8, num_points)
+
+    def set_sources(self):
+        self.sources = _unmixed_sources(self.time)
+
+    def get_mixed(self):
+        return _mix_sources(self.sources)
+
+
+
+    #private
+def _unmixed_sources(time = 2000):
+    s1 = np.sin(2 * time)
+    s2 = np.sign(np.sin(3 * time))
+    s3 = signal.sawtooth(2 * np.pi * time)
+
+    S = np.c_[s1, s2, s3]
+    S += 0.2 * np.random.normal(size=S.shape)
+    S /= S.std(axis=0) #Standardize the data
+
+    return S
+
+def _mix_sources(sources):
+    A = np.array([[1, 1, 1], [0.5, 2, 1.0], [1.5, 1.0, 2.0]])
+    X = np.dot(sources, A.T)
+    return X
+
+
+
 if __name__ == '__main__':
 
     io = WavIO('elvis_riverside.wav')
     channels = io.read_source()
     channels = [ channels[0][:int(len(channels[0])/2)] ]
     io.write_sources(channels)
+
+
+
+
+
+
+
+
+
