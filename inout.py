@@ -22,21 +22,17 @@ class WavIO:
         # Open file and read it
         frame_size = self.in_file.getnframes()
         channel_size = self.in_file.getnchannels()
+        if channel_size == 1: raise BaseException('Must be more than 1 channel')
         self.rate, data = sciowav.read(self.fn) 
 
         # Check if compressed
         _compressed_error_check(self.in_file)
 
-        # Seperate each channel source in a seperate array
-        channels = [np.array([], dtype=data.dtype)] * channel_size
-        frames = np.split(data, len(data)/channel_size)
-        assert len(frames) == frame_size
-        assert len(frames[0]) == channel_size
-        for frame in frames:
-            for i in range(channel_size):
-                channels[i] = np.append(channels[i],frame[i])
+        # Remember data type
+        self.dtype = data.dtype
 
-        return channels
+        # Seperate each channel source in a seperate array
+        return np.array(data, dtype=np.float64)
 
     def write_sources(self, sources):
     # Writes a wav file named "fn_#.wav" for all N sources
@@ -45,8 +41,8 @@ class WavIO:
         for i in range(len(sources)):
             source = _normalize_volume(sources[i])
             # Catch special case of uint8
-            if source.dtype == np.int8:
-                source = np.array(source, dtype=np.int8)
+            if source.dtype == self.dtype:
+                source = np.array(source, dtype=self.dtype)
             sciowav.write(root_name+str(i)+'.wav', self.rate, source)
             
 def scale_source(source, factor):

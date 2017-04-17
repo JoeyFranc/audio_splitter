@@ -5,22 +5,20 @@ import numpy as np
 
 def centering(mtx):
 
-    unsigned = False
+    # Get the mean for each channel
+    means = [ np.mean(row) for row in mtx.T ]
 
-    # Special case: uint8
-    if mtx.dtype == np.uint8:
-        mtx = np.array(mtx, dtype=np.int16)
-        unsigned = True
-    mean = np.mean(mtx)
-    mtx -= mean
+    # Normalize each channel
+    for i in range(len(mtx.T)):
+        mtx[:][i] -= means[i]
 
-    # Convert special case to int8
-    if unsigned:
-        mtx = np.array(mtx, dtype=np.int8)
-    return (mean, centered)
+    # Return normalized channel and mean vectors
+    return (means, mtx)
 
 def whitening(mtx):
-    X = mtx @ mtx.T
+
+    # Get the covariance matrix
+    X = mtx.T @ mtx
     eigenval, eigenvec = np.linalg.eig(X)
     Drootinv = np.diag(np.sqrt(1/eigenval))
     E = eigenvec

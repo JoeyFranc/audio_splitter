@@ -41,16 +41,12 @@ def ica(fn):
     io = inout.WavIO(fn)
     channels = io.read_source()
     
-    # Now perform the algorithm seperately on each channel
-    sources = []
-    for channel in channels:
+    # First, preprocess data
+    means, centered = prep.centering(channels)
+    processed = prep.whitening(centered)
 
-        # First, preprocess data
-        mean, centered = prep.centering(channel)
-        processed = prep.whitening(centered)
-    
-        # Second, run ICA
-        sources += [multi_unit_ica(processed, f.exp, f.dexp, 3)]
+    # Second, run ICA
+    W = [multi_unit_ica(processed, f.exp, f.dexp, 3)]
 
     # Concatenate channels
     for channel in sources[1:]:
@@ -69,4 +65,5 @@ def ica(fn):
 
 if __name__ == '__main__':
 
-    ica('elvis_riverside.wav')
+    ica('test.wav')
+
