@@ -39,10 +39,11 @@ class WavIO:
     # Writes a wav file named "fn_#.wav" for all N sources
 
         root_name = self.fn[:-4]+'_'
-        for i in range(len(sources.T)):
-            source = _normalize_volume(sources[:][i])
+        for i in range(len(sources)):
             # Revert back to original type
+            source = _normalize_volume(sources[:][i], self.dtype)
             source = np.array(source, dtype=self.dtype)
+            print(source)
             sciowav.write(root_name+str(i)+'.wav', self.rate, source)
             
 def scale_source(source, factor):
@@ -52,7 +53,7 @@ def scale_source(source, factor):
 
 """ Private Methods """
 
-def _normalize_volume(source):
+def _normalize_volume(source, type_name):
 # Increases or decreases volume back to an appropriate scale
 
     # Find the maximum value
@@ -61,12 +62,11 @@ def _normalize_volume(source):
     max_val = max(abs(high), abs(low))
 
     # docs.scipy.org/doc/scipy/reference/generated/scipy.io.wavfile.read.html
-    type_name = str(source.dtype) 
     peak = 0
-    if   type_name == 'uint8':      peak = 255
-    elif type_name == 'int16':      peak = 32767
-    elif type_name == 'int32':      peak = 2147483647
-    elif type_name == 'float32':    peak = 1
+    if   type_name == np.uint8:      peak = 255
+    elif type_name == np.int16:      peak = 32767
+    elif type_name == np.int32:      peak = 2147483647
+    elif type_name == np.float32:    peak = 1
 
     # Return the scaled source so that the max value touches
     # the max value allowed by the wav file type

@@ -67,18 +67,13 @@ def ica(fn):
     # First, preprocess data
     means, centered = prep.centering(channels)
     processed = prep.whitening(centered)
-    print(len(processed))
 
     # Second, run ICA
     #Note: Using first and second derivatives of G
-    W = multi_unit_ica(processed, f.exp, f.dexp, 3)
+    W = multi_unit_ica(processed.T[:2000], f.exp, f.dexp, len(means))
 
-    # Third, add the means back
-    for i in range(len(means)):
-        centered[:][i] += means[i]
-
-    # Fourth, get sources from sample, adding back the means
-    S = W*processed
+    # Third, get sources from sample, adding back the means
+    S = W @ processed
 
     # Finally, Write output files
     io.write_sources(S)

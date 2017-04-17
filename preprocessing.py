@@ -22,5 +22,5 @@ def whitening(mtx):
     eigenval, eigenvec = np.linalg.eig(X)
     Drootinv = np.diag(np.sqrt(1/eigenval))
     E = eigenvec
-    xtilde = E @ Drootinv @ E.T @ X
+    xtilde = E @ Drootinv @ E.T @ mtx.T
     return np.array(xtilde, dtype=mtx.dtype)
