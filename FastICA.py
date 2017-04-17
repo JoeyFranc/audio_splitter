@@ -23,7 +23,7 @@ def one_unit_ica(X, g, dg, w_prev = None):
             w -= sum([np.dot(w.T, wj) * wj for wj in w_prev])
 
         #normalize
-        w = w/np.linalg.norm(w)
+        w /=np.linalg.norm(w)
 
         if np.allclose(abs(np.dot(w, w_old)), 1):
             break
@@ -45,16 +45,31 @@ def multi_unit_ica(X, g, dg, num_components):
 
 
 def trial():
+    import matplotlib.pyplot as plt
+
     S = inout.DGP()
     S.set_sources()
-    S = S.get_mixed()
+    X = S.get_mixed()
 
-    num_components = S.shape[1]
-    mean, centered = prep.centering(S)
+    num_components = X.shape[1]
+    mean, centered = prep.centering(X)
     whitened = prep.whitening(centered)
 
-    W = np.array(multi_unit_ica(S, f.dexp, f.d2exp, num_components))
-    return W, S
+    W = np.array(multi_unit_ica(X, f.dexp, f.d2exp, num_components))
+
+    model = X @ W
+    colors = ['red', 'steelblue','orange']
+    plt.axhline(0, color="black")
+    plt.title("Original Signal")
+    for signal, color in  zip(S.sources.T, colors):
+        plt.plot(signal, color=color)
+    plt.show()
+    plt.axhline(0, color="black")
+    plt.title("Recovered Signal")
+    for signal, color in  zip(model.T, colors):
+        plt.plot(signal, color=color)
+    plt.show()
+    return W, X
 
 
 def ica(fn):
