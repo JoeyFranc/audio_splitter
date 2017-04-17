@@ -11,7 +11,10 @@ def exp(u):
     return -np.exp((-1/2) * u**2)
 
 def dexp(u):
-    return -u * exp(u)
+    return u * exp(u)
+
+def d2exp(u):
+ 	return (u**2 - 1) * exp(u)
 
 def negentropy(u, g = exp):
     '''Honestly looks like this isn't even used in practice,
